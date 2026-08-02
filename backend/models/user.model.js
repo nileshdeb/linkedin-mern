@@ -59,7 +59,7 @@ const userSchema =new mongoose.Schema({
     ],
     connections:[
         {type:mongoose.Schema.Types.ObjectId,
-            ref:User
+            ref:"User"
         }
     ]
 
