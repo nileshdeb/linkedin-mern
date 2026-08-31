@@ -6,11 +6,29 @@ import { FaUserGroup } from "react-icons/fa6";
 import { IoNotifications } from "react-icons/io5";
 import dp from '../assets/emptyprofile.png'
 import { userDataContext } from '../context/UserContext';
+import { authDataContext } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 
 function Nav() {
     let [activeSearch, setActiveSearch] = useState(false)
     let { userData, setUserData } = useContext(userDataContext)
+    let {serverUrl}= useContext(authDataContext) 
+    let navigate = useNavigate()
+    let [showPopup,setShowPopup]=useState(false)
+    const handleSignOut= async ()=>{
+        try {
+            let result =await axios.get(serverUrl+"/api/auth/logout",{withCredentials:true})
+            setUserData(null)
+            navigate("/login")
+            console.log(result);
+            
+        } catch (error) {
+            console.log(error);
+            
+        }
+    }
     return (
         <div className='w-full h-[80px] bg-[white] fixed top-0 shadow-lg flex justify-between md:justify-around items-center px-[10px]'>
             <div className='flex justify-center items-center gap-[10px]'>
@@ -30,8 +48,7 @@ function Nav() {
             </div>
 
             <div className='flex justify-center items-center gap-[20px]'>
-
-                <div className='w-[300px] min-h-[300px] bg-white shadow-lg absolute top-[85px] rounded-lg 
+                {showPopup && <div className='w-[300px] min-h-[300px] bg-white shadow-lg absolute top-[85px] rounded-lg 
                 flex flex-col items-center p-[20px] gap-[20px]'>
                     <div className='w-[70px] h-[70px] rounded-full overflow-hidden'>
                         <img src={dp} alt="" className='w-full h-full' />
@@ -46,9 +63,11 @@ function Nav() {
                         <div>My Networks</div>
                     </div>
 
-                    <button className='w-[100%] h-[40px] rounded-full border-2 border-[#e83508] text-[#e83508]'>Sign Out</button>
+                    <button className='w-[100%] h-[40px] rounded-full border-2 border-[#e83508] text-[#e83508]' onClick={handleSignOut}>Sign Out</button>
+                </div>}
 
-                </div>
+                
+
                 <div className='lg:flex flex-col items-center justify-center hidden'>
                     <IoMdHome className='w-[23px] h-[23px] text-gray-600 ' />
                     <div>Home</div>
@@ -62,7 +81,7 @@ function Nav() {
                     <div className='hidden md:block'>Notifications</div>
                 </div>
 
-                <div className='w-[50px] h-[50px] rounded-full overflow-hidden'>
+                <div className='w-[50px] h-[50px] rounded-full overflow-hidden cursor-pointer' onClick={()=>setShowPopup(prev=>!prev )}>
                     <img src={dp} alt="" className='w-full h-full' />
                 </div>
 
