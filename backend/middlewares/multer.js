@@ -6,6 +6,11 @@ let storage=multer.diskStorage({
     destination:(req,file,cb)=>{
         cb(null,"./public")
     },
-    filename:()
+    filename:(req,file,cb)=>{
+        cb(null,file.originalname)
+    }
 
 })
+
+
+export default upload
