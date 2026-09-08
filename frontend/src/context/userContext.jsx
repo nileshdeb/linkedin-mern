@@ -6,6 +6,7 @@ export const userDataContext=createContext()
 function UserContext({children}) {
 let [userData,setUserData]=useState(null)
 let {serverUrl}=useContext(authDataContext)
+let[edit,setEdit]=useState(false)
 
 const getCurrentUser=async()=>{
   try {
@@ -24,7 +25,7 @@ const getCurrentUser=async()=>{
 useEffect(()=>{
   getCurrentUser()
 },[])
-  const value={userData,setUserData}
+  const value={userData,setUserData,edit,setEdit}
   return (  
     <div>
       <userDataContext.Provider value={value}>
