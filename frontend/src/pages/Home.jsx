@@ -19,13 +19,13 @@ function Home() {
       <div className='w-full lg:w-[25%] min-h-[200px] bg-[white] shadow-lg
       rounded-lg p-[10px] relative'>
         <div className='w-[100%] h-[100px] bg-gray-400 rounded cursor-pointer'>
-          <img src="" alt="" className='w-full' />
+          <img src={userData.coverImage || ""} alt="" className='w-full' />
           <MdOutlineCameraAlt className='absolute right-[20px] top-[20px] w-[25px] h-[25px] text-gray-800 cursor-pointer'onClick={()=>setEdit(true)}
           />
 
         </div>
         <div className='w-[70px] h-[70px] rounded-full overflow-hidden items-center justify-center absolute top-[65px] left-[35px] cursor-pointer'onClick={()=>setEdit(true)}>
-          <img src={dp} alt="" className='h-full' />
+          <img src={userData.profileImage || dp} alt="" className='h-full' />
           
         </div>
         <div className='w-[20px] h-[20px] bg-[#17c1ff] absolute top-[105px] left-[90px] rounded-full flex justify-center items-center'>

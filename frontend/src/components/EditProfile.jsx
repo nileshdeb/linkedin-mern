@@ -1,13 +1,16 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useState, useRef } from 'react'
 import { RxCross1 } from "react-icons/rx";
 import { userDataContext } from '../context/UserContext';
 import dp from '../assets/emptyprofile.png'
 import { GoPlus } from "react-icons/go";
 import { MdOutlineCameraAlt } from "react-icons/md";
+import axios from 'axios';
+import { authDataContext } from '../context/AuthContext';
 
 
 function EditProfile({ }) {
   let { userData, setUserData, edit, setEdit } = useContext(userDataContext)
+  let { serverUrl } = useContext(authDataContext)
   let [firstName, setFirstName] = useState(userData.firstName || "")
   let [lastName, setLastName] = useState(userData.lastName || "")
   let [userName, setUserName] = useState(userData.userName || "")
@@ -17,37 +20,138 @@ function EditProfile({ }) {
   let [skills, setSkills] = useState(userData.skills || [])
   let [newSkills, setNewSkills] = useState("")
   let [education, setEducation] = useState(userData.education || [])
-  let [newEducation, setNewEducation] = useState("")
+  let [newEducation, setNewEducation] = useState({
+    college: "",
+    degree: "",
+    fieldOfStudy: ""
+  })
+  let [experience, setExperience] = useState(userData.experience || [])
+  let [newExperience, setNewExperience] = useState({
+    title: "",
+    company: "",
+    description: ""
+  })
+  let [frontendProfileImage, setFrontendProfileImage] = useState(userData.profileImage || dp)
+  let [backendProfileImage, setBackendProfileImage] = useState(null)
 
-  function addSkill(e){
+  let [frontendCoverImage, setFrontendCoverImage] = useState(userData.coverImage || null)
+  let [backendCoverImage, setBackendCoverImage] = useState(null)
+  let [saving,setSaving]=useState(false)
+
+
+  const profileImage = useRef()
+  const coverImage = useRef()
+
+
+  function addSkill(e) {
     e.preventDefault()
-    if(newSkills && !skills.includes(newSkills)){
-      setSkills([...skills,newSkills])
+    if (newSkills && !skills.includes(newSkills)) {
+      setSkills([...skills, newSkills])
     }
     setNewSkills("")
   }
 
-  function removeSkill(skill){
-    if(skills.includes(skill)){
-      setSkills(skills.filter((s)=>s!==skill))
+  function removeSkill(skill) {
+    if (skills.includes(skill)) {
+      setSkills(skills.filter((s) => s !== skill))
     }
   }
+
+  function addEducation(e) {
+    e.preventDefault()
+    if (newEducation.college && newEducation.degree && newEducation.fieldOfStudy) {
+      setEducation([...education, newEducation])
+    }
+    setNewEducation({
+      college: "",
+      degree: "",
+      fieldOfStudy: ""
+    })
+  }
+  function addExperience(e) {
+    e.preventDefault()
+    if (newExperience.title && newExperience.company && newExperience.description) {
+      setExperience([...experience, newExperience])
+    }
+    setNewExperience({
+      title: "",
+      company: "",
+      description: ""
+    })
+  }
+  function removeEducation(edu) {
+    if (education.includes(edu)) {
+      setEducation(education.filter((e) => e !== edu))
+    }
+  }
+  function removeExperience(exp) {
+    if (experience.includes(exp)) {
+      setExperience(experience.filter((e) => e !== exp))
+    }
+  }
+  function handleProfileImage(e) {
+    let file = e.target.files[0]
+    setBackendProfileImage(file)
+    setFrontendProfileImage(URL.createObjectURL(file))
+  }
+  function handleCoverImage(e) {
+    let file = e.target.files[0]
+    setBackendCoverImage(file)
+    setFrontendCoverImage(URL.createObjectURL(file))
+  }
+  const handleSaveProfile = async () => {
+    setSaving(true)
+    try {
+      let formdata = new FormData()
+      formdata.append("firstName", firstName)
+      formdata.append("lastName", lastName)
+      formdata.append("userName", userName)
+      formdata.append("headline", headline)
+      formdata.append("location", location)
+      formdata.append("skills", JSON.stringify(skills))
+      formdata.append("education", JSON.stringify(education))
+      formdata.append("experience", JSON.stringify(experience))
+
+      if (backendProfileImage) {
+        formdata.append("profileImage", backendProfileImage)
+      }
+
+      if (backendCoverImage) {
+        formdata.append("coverImage", backendCoverImage)
+      }
+
+      let result = await axios.put(serverUrl + "/api/user/updateprofile", formdata, { withCredentials: true })
+      setUserData(result.data)
+      setSaving(false)
+      setEdit(false)
+
+    } catch (error) {
+      console.log(error);
+      setSaving(false)
+
+
+    }
+  }
+
+
   return (
     <div className='w-full h-[100vh] fixed top-0  z-[100] flex justify-center items-center'>
+      <input type="file" accept='image/*' hidden ref={profileImage} onChange={handleProfileImage} />
+      <input type="file" accept='image/*' hidden ref={coverImage} onChange={handleCoverImage} />
       <div className=' w-full h-full bg-black opacity-[0.5] absolute'></div>
       <div className='w-[90%] max-w-[500px] h-[600px] bg-white relative z-[200] shadow-lg rounded-lg p-[10px] overflow-auto'>
         <div className='absolute top-[20px] right-[20px] cursor-pointer ' onClick={() => setEdit(false)}>
           <RxCross1 className='w-[25px] h-[25px] text-gray-800 font-bold' />
         </div>
 
-        <div className='w-full h-[150px] bg-gray-500 rounded-lg mt-[40px]'>
-          <img src="" alt="" className='w-full ' />
+        <div className='w-full h-[150px] bg-gray-500 rounded-lg mt-[40px] overflow-hidden' onClick={() => coverImage.current.click()}>
+          <img src={frontendCoverImage} alt="" className='w-full ' />
           <MdOutlineCameraAlt className='absolute right-[20px] top-[60px] w-[25px] h-[25px] text-white cursor-pointer' onClick={() => setEdit(true)}
           />
 
         </div>
-        <div className='w-[80px] h-[80px] rounded-full overflow-hidden absolute top-[150px] ml-[20px]'>
-          <img src={dp} alt="" className='w-full h-full' />
+        <div className='w-[80px] h-[80px] rounded-full overflow-hidden absolute top-[150px] ml-[20px]' onClick={() => profileImage.current.click()}>
+          <img src={frontendProfileImage} alt="" className='w-full h-full' />
         </div>
         <div className='w-[20px] h-[20px] bg-[#17c1ff] absolute top-[200px] left-[90px] rounded-full flex justify-center items-center'>
           <GoPlus className='text-white cursor-pointer' />
@@ -64,15 +168,64 @@ function EditProfile({ }) {
             <h1 className='text-[19px] font-semibold'>Skills</h1>
             {skills && <div className='flex flex-col gap-[10px]'>
               {skills.map((skill, index) => (
-                <div key={index} className='w-full h-[40px] border-[1px] bprder-gray-600 bg-gray-200 p-[10px] rounded-lg flex justify-between items-center'><span>{skill}</span><RxCross1 className='w-[20px] h-[20px] text-gray-800 font-bold cursor-pointer' onClick={()=>removeSkill(skill)}/></div>
+                <div key={index} className='w-full h-[40px] border-[1px] bprder-gray-600 bg-gray-200 p-[10px] rounded-lg flex justify-between items-center'><span>{skill}</span><RxCross1 className='w-[20px] h-[20px] text-gray-800 font-bold cursor-pointer' onClick={() => removeSkill(skill)} /></div>
               ))}
             </div>}
             <div className='flex flex-col gap-[10px] items-start' >
-              <input type="text" placeholder='add new skill' value={newSkills} onChange={(e) => setNewSkills(e.target.value)} className='w-full h-[50px] outline-none border-gray-600 px-[10px] py-[5px] text-[16px] border-2 rounded-lg'/>
+              <input type="text" placeholder='add new skill' value={newSkills} onChange={(e) => setNewSkills(e.target.value)} className='w-full h-[50px] outline-none border-gray-600 px-[10px] py-[5px] text-[16px] border-2 rounded-lg' />
               <button className='w-[100%] h-[40px] rounded-full border-2 border-[#2dc0ff] text-[#2dc0ff]' onClick={addSkill}>Add</button>
+            </div>
+          </div>
+
+          <div className='w-full p-[10px] border-2 border-gray-600 flex flex-col gap-[10px]'>
+            <h1 className='text-[19px] font-semibold'>Education</h1>
+            {education && <div className='flex flex-col gap-[10px]'>
+              {education.map((edu, index) => (
+                <div key={index} className='w-full  border-[1px] bprder-gray-600 bg-gray-200 p-[10px] rounded-lg flex justify-between items-center'>
+                  <div>
+                    <div>College:{edu.college}</div>
+                    <div>Degree:{edu.degree}</div>
+                    <div>Field of Study:{edu.fieldOfStudy}</div>
+                  </div>
+
+                  <RxCross1 className='w-[20px] h-[20px] text-gray-800 font-bold cursor-pointer' onClick={() => removeEducation(edu)} /></div>
+              ))}
+            </div>}
+            <div className='flex flex-col gap-[10px] items-start' >
+              <input type="text" placeholder='college' value={newEducation.college} onChange={(e) => setNewEducation({ ...newEducation, college: e.target.value })} className='w-full h-[50px] outline-none border-gray-600 px-[10px] py-[5px] text-[16px] border-2 rounded-lg' />
+              <input type="text" placeholder='degree' value={newEducation.degree} onChange={(e) => setNewEducation({ ...newEducation, degree: e.target.value })} className='w-full h-[50px] outline-none border-gray-600 px-[10px] py-[5px] text-[16px] border-2 rounded-lg' />
+              <input type="text" placeholder='field of study' value={newEducation.fieldOfStudy} onChange={(e) => setNewEducation({ ...newEducation, fieldOfStudy: e.target.value })} className='w-full h-[50px] outline-none border-gray-600 px-[10px] py-[5px] text-[16px] border-2 rounded-lg' />
+
+              <button className='w-[100%] h-[40px] rounded-full border-2 border-[#2dc0ff] text-[#2dc0ff]' onClick={addEducation}>Add</button>
             </div>
 
           </div>
+          <div className='w-full p-[10px] border-2 border-gray-600 flex flex-col gap-[10px]'>
+            <h1 className='text-[19px] font-semibold'>Experience</h1>
+            {experience && <div className='flex flex-col gap-[10px]'>
+              {experience.map((exp, index) => (
+                <div key={index} className='w-full  border-[1px] bprder-gray-600 bg-gray-200 p-[10px] rounded-lg flex justify-between items-center'>
+                  <div>
+                    <div>title:{exp.title}</div>
+                    <div>company:{exp.company}</div>
+                    <div>description:{exp.description}</div>
+                  </div>
+
+                  <RxCross1 className='w-[20px] h-[20px] text-gray-800 font-bold cursor-pointer' onClick={() => removeExperience(exp)} /></div>
+              ))}
+            </div>}
+            <div className='flex flex-col gap-[10px] items-start' >
+              <input type="text" placeholder='title' value={newExperience.title} onChange={(e) => setNewExperience({ ...newExperience, title: e.target.value })} className='w-full h-[50px] outline-none border-gray-600 px-[10px] py-[5px] text-[16px] border-2 rounded-lg' />
+              <input type="text" placeholder='company' value={newExperience.company} onChange={(e) => setNewExperience({ ...newExperience, company: e.target.value })} className='w-full h-[50px] outline-none border-gray-600 px-[10px] py-[5px] text-[16px] border-2 rounded-lg' />
+              <input type="text" placeholder='description' value={newExperience.description} onChange={(e) => setNewExperience({ ...newExperience, description: e.target.value })} className='w-full h-[50px] outline-none border-gray-600 px-[10px] py-[5px] text-[16px] border-2 rounded-lg' />
+
+              <button className='w-[100%] h-[40px] rounded-full border-2 border-[#2dc0ff] text-[#2dc0ff]' onClick={addExperience}>Add</button>
+            </div>
+
+
+          </div>
+
+          <button className='w-[100%] h-[50px] rounded-full bg-[#24b2ff] mt-[40px] text-white' disable={saving} onClick={()=>handleSaveProfile()}>{saving?"saving...":"Save Profile"}</button>
         </div>
 
 
