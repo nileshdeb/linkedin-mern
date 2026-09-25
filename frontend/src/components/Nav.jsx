@@ -51,7 +51,7 @@ function Nav() {
                 {showPopup && <div className='w-[300px] min-h-[300px] bg-white shadow-lg absolute top-[85px] rounded-lg 
                 flex flex-col items-center p-[20px] gap-[20px]'>
                     <div className='w-[70px] h-[70px] rounded-full overflow-hidden'>
-                        <img src={dp} alt="" className='w-full h-full' />
+                        <img src={userData.profileImage || dp} alt="" className='w-full h-full' />
                     </div>
                     <div className='text-[19px] font-semibold text-gray-700'>{`${userData.firstName} ${userData.lastName}`}</div>
                     <button className='w-[100%] h-[40px] rounded-full border-2 border-[#2dc0ff] text-[#2dc0ff]'>View Profile</button>
@@ -82,7 +82,7 @@ function Nav() {
                 </div>
 
                 <div className='w-[50px] h-[50px] rounded-full overflow-hidden cursor-pointer' onClick={()=>setShowPopup(prev=>!prev )}>
-                    <img src={dp} alt="" className='w-full h-full' />
+                    <img src={userData.profileImage || dp} alt="" className='w-full h-full' />
                 </div>
 
 

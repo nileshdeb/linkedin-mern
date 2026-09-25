@@ -24,7 +24,7 @@ function Home() {
           />
 
         </div>
-        <div className='w-[70px] h-[70px] rounded-full overflow-hidden items-center justify-center absolute top-[65px] left-[35px] cursor-pointer'onClick={()=>setEdit(true)}>
+        <div className='w-[70px] h-[70px] rounded-full overflow-hidden flex items-center justify-center absolute top-[65px] left-[35px] cursor-pointer'onClick={()=>setEdit(true)}>
           <img src={userData.profileImage || dp} alt="" className='h-full' />
           
         </div>
